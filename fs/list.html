@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>CC3200网页控制</title>
+	<script type="text/javascript">	
+	window.onload=function()
+     {
+		checkLogin();
+         if (!window.HY) {
+             window.HY = {};
+         }
+         window.HY={
+             $: function () {
+                 var elements = new Array();
+                 for (var i = 0; i <= arguments.length; i++) {
+                     var element = arguments[i];
+                     if (typeof element == 'string') {
+                         element = document.getElementById(element);
+                     }
+                     if (arguments.length == 1) {
+                         return element;
+                     }
+                     elements.push(element);
+                 }
+                 return elements;
+             },
+             ajax:function (obj){
+                 if (!obj.url) {
+                     return false;
+                 }
+                 var XHR;
+
+                 var method = obj.type || "GET";
+                 var async =  true;
+                 var dataType = obj.dataType;
+                 var parms = obj.param || null;
+
+                 XHR = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+                 XHR.onreadystatechange = function () {
+                     if (XHR.readyState == 4 && (XHR.status >= 200 && XHR.status < 300 || XHR.status == 304)) {
+                         if (obj.success) {
+                             if (dataType && dataType.toLocaleLowerCase() === "json") {
+                                 try {
+                                     obj.success(eval("(" + XHR.responseText + ")"));
+                                 }
+                                 catch (err) {
+
+                                 }
+
+                             } else if (dataType && dataType.toLocaleLowerCase() === "xml") {
+                                 obj.success(XHR.responseXML);
+                             } else {
+                                 obj.success(XHR.responseText);
+                             }
+                         }
+                         if (obj.complete) {
+                             obj.complete();
+                         }
+
+                     }
+                 }
+                 XHR.open(method, obj.url, async);
+                 XHR.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                 XHR.setRequestHeader("Content-length", parms.length);
+                 XHR.setRequestHeader("Connection", "close");
+                 XHR.setRequestHeader('If-Modified-Since', 'Thu, 06 Apr 2006 00:00: 00 GMT');
+                 if (obj.type == "POST") {
+                     XHR.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;");
+                 }
+                 if (obj.sendBefore) {
+                     obj.sendBefore();
+                 }
+                 XHR.send(parms);
+             }
+         }
+     };
+	var ajaxObj = { url: "", dataType: "json", error: function () { }, sendBefore: function () { }, success: function () { } };
+	
+	function checkLogin()
+	{
+		var status = "__SL_G_LOL";
+		if(status.indexOf("LOGIN_OK") > -1)
+		{
+		
+		}
+		else
+			window.location.href="main.html";
+	}
+	function exit_login()
+	{
+			window.location.href="main.html";
+	}
+	function pwm_control(param)
+	{
+		var params = "__SL_P_PWM=";
+		params=params+param;
+		post_control(params);
+		window.location.href="list.html";
+	}
+	
+	function post_control(params)
+	{ 
+		ajaxObj.type="POST";
+		ajaxObj.url="No_content";
+		ajaxObj.dataType = "text";
+		ajaxObj.param = params;
+		ajaxObj.success=function(){};
+		HY.ajax(ajaxObj);
+		
+	}
+	function adc_control(params)
+	{ 
+		window.location.href="list.html";	
+	}
+		
+	</script>
+</head>
+<body>
+	
+	<div style = "text-align:right;">
+		<button onclick="exit_login()">重新登陆</button>
+	</div>
+	<h1 align="center">控制界面</h1>	
+	<br/>
+	<br/>
+	<div align="center">
+		<label>PWM控制</label>
+		<button onclick="pwm_control('up')">+</button>
+		<button onclick="pwm_control('down')">-</button>
+		<br/>
+		<h4>当前PWM占空比：__SL_G_PWM %</h4>
+	</div>
+	<br/>
+	<br/>
+	<div align="center">
+		<label>查看传感器(pin59)</label>
+		<button onclick="adc_control()">获取</button>
+		<br/>
+		<h4>当前电压值为：__SL_G_ADC V</h4>
+		<h4>当前加速度为：__SL_G_ACC</h4>
+	</div>
+
+</body>
+</html>
